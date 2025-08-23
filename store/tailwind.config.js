@@ -13,8 +13,13 @@ module.exports = {
           600: '#2563eb',
           700: '#1d4ed8',
         }
+      },
+      aspectRatio: {
+        '1': '1',
       }
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/aspect-ratio'),
+  ],
 }

@@ -55,6 +55,18 @@ export function useLocalStorage(key, initialValue) {
   return [storedValue, setValue];
 }
 
+export function useImagePreload(imageSrc) {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = imageSrc;
+    img.onload = () => setLoaded(true);
+  }, [imageSrc]);
+
+  return loaded;
+}
+
 export function useIntersectionObserver(
   elementRef,
   { threshold = 0, root = null, rootMargin = '0%', freezeOnceVisible = false }

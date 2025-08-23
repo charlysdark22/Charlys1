@@ -5,33 +5,36 @@ import { useLanguage } from '../context/LanguageContext';
 import { useCart } from '../context/CartContext';
 import ThemeToggle from './ThemeToggle';
 import CartIcon from './CartIcon';
+import { motion, useScroll } from 'framer-motion';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const { user, logout } = useAuth();
   const { language, toggleLanguage, t } = useLanguage();
   const { cartItemCount } = useCart();
   const location = useLocation();
+  const { scrollY } = useScroll();
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    return scrollY.onChange((latest) => {
+      setIsScrolled(latest > 0);
+    });
+  }, [scrollY]);
 
   const isActive = (path) => location.pathname === path;
 
   return (
-    <header className={`fixed w-full top-0 z-50 transition-all duration-300 ${
-      isScrolled 
-        ? 'bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg shadow-lg'
-        : 'bg-transparent'
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <motion.header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? 'bg-white/90 backdrop-blur-md shadow-lg' : 'bg-transparent'
+      }`}
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="container mx-auto px-4">
+        <nav className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex items-center">
             <Link 
@@ -47,7 +50,7 @@ export default function Header() {
           </div>
 
           {/* Navigation */}
-          <nav className="hidden md:flex space-x-8">
+          <div className="hidden md:flex items-center space-x-8">
             {[
               { path: '/', label: 'nav.home' },
               { path: '/products', label: 'nav.products' }
@@ -67,8 +70,7 @@ export default function Header() {
                 }`} />
               </Link>
             ))}
-
-          </nav>
+          </div>
 
           {/* Right side */}
           <div className="flex items-center space-x-4">
@@ -146,61 +148,8 @@ export default function Header() {
               </svg>
             </button>
           </div>
-        </div>
-
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden">
-            <div className={`px-4 py-2 space-y-1 transition-all duration-300 ${
-              isScrolled
-                ? 'bg-white/90 dark:bg-gray-800/90'
-                : 'bg-white/80 dark:bg-gray-800/80'
-            } backdrop-blur-lg`}>
-              {[
-                { path: '/', label: 'nav.home' },
-                { path: '/products', label: 'nav.products' },
-                ...(user
-                  ? [
-                      { path: '/profile', label: 'nav.profile' },
-                      { path: '/cart', label: 'nav.cart' }
-                    ]
-                  : [
-                      { path: '/login', label: 'nav.login' },
-                      { path: '/register', label: 'nav.register' }
-                    ]
-                )
-              ].map(({ path, label }) => (
-                <Link
-                  key={path}
-                  to={path}
-                  className={`block py-2 relative group ${
-                    isActive(path)
-                      ? 'text-blue-600 dark:text-blue-400'
-                      : 'text-gray-700 dark:text-gray-300'
-                  }`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t(label)}
-                  <span className={`absolute bottom-0 left-0 w-full h-0.5 transform transition-transform duration-300 ${
-                    isActive(path) ? 'scale-x-100 bg-blue-500' : 'scale-x-0 group-hover:scale-x-100 bg-blue-400'
-                  }`} />
-                </Link>
-              ))}
-              {user && (
-                <button
-                  onClick={() => {
-                    logout();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="block w-full text-left py-2 text-gray-700 dark:text-gray-300"
-                >
-                  {t('nav.logout')}
-                </button>
-              )}
-            </div>
-          </div>
-        )}
+        </nav>
       </div>
-    </header>
+    </motion.header>
   );
 }
